@@ -51,6 +51,7 @@
 #include "usart_driver.h"
 #include "TC_driver.h"
 #include "avr_compiler.h"
+#include <string.h>
 
 uint32_t dec2bcd_r(uint16_t dec);
 uint32_t dec2bcd(uint16_t dec);
@@ -117,6 +118,7 @@ enum
 	RPM_CLR,
 	MPH_CLR,
 	SPEC_CMD,
+	SPEC_CMD2,
 	DONE_RPM,
 	DONE_MPH
 }STATES;
@@ -154,7 +156,7 @@ int main(void)
 	USART_Baudrate_Set(&USART2, 705 , -7);
 //	USART_Baudrate_Set(&USART1, 12 , 0);
 
-/* Enable both RX and TX. */
+/* Enable both RX a TX. */
 //	USART_Rx_Enable(USART_data1.usart);
 	USART_Tx_Enable(USART_data1.usart);
 
@@ -210,15 +212,40 @@ int main(void)
 	sendChar(3,MPH_DISPLAY);
 	sendChar(0x10,MPH_DISPLAY);
 	_delay_ms(100);
+	bright = 100;
+	sendChar(LED_BRIGHT, MPH_DISPLAY);
+	_delay_ms(1);
+	sendChar(bright, MPH_DISPLAY);
+	_delay_ms(1);
+	sendChar(LED_BRIGHT, RPM_DISPLAY);
+	_delay_ms(1);
+	sendChar(bright, RPM_DISPLAY);
+	_delay_ms(1);
+	special_cmd(1,1);
+	_delay_ms(1);
+	special_cmd(2,1);
+	_delay_ms(1);
+	special_cmd(0,1);
+	_delay_ms(1);
+	state = IDLE;
 
-//	USART_Rx_Enable(USART_data1.usart);
+	USART_Rx_Enable(USART_data1.usart);
 	mph = 2000;
 	rpm = 0;
-	bright = 100;
-//	USART_Rx_Enable(USART_data2.usart);
+	USART_Rx_Enable(USART_data2.usart);
+
+	for(j = 0;j < 10;j++)
+	{
+		PORTE_OUTTGL = 2;
+		_delay_ms(10);
+	}
+
+	// to test, comment out the USART_Rx_Enable's above and
+	// uncomment the code below
 
 	while(1)
 	{
+/*
 		if(mph > 20)
 		{
 			_delay_ms(3);
@@ -240,6 +267,9 @@ int main(void)
 //		process_digits(rpm,RPM_DISPLAY);
 //		_delay_ms(10);
 		process_digits(mph,MPH_DISPLAY);
+*/
+//		PORTE_OUTTGL = 2;
+		_delay_ms(1000);
 	}
 }
 
@@ -249,15 +279,6 @@ ISR(USARTC0_RXC_vect)	// USART1 is the data/cmd channel for the rpm LED
 	UCHAR ch;
 	USART_RXComplete(&USART_data1);
 	ch = USART_RXBuffer_GetByte(&USART_data1);
-	// cmds:
-	// 0xFF - rpm digit 
-	// 0xFE - mph digit 
-	// 0xFD - set brighness for rpm 
-	// 0xFC - set brighness for mph
-	// params:
-	// 0 - low byte
-	// 1 - high byte 
-	// 2 - extra cmd (brightness or cursor
 
 	switch(state)
 	{
@@ -277,6 +298,15 @@ ISR(USARTC0_RXC_vect)	// USART1 is the data/cmd channel for the rpm LED
 					break;
 				case MPH_BR_CMD:
 					state = MPH_BRIGHT;
+					break;
+				case MPH_CL_CMD:
+					state = MPH_CLR;
+					break;	
+				case RPM_CL_CMD:
+					state = RPM_CLR;
+					break;	
+				case SPECIAL_CMD:
+					state = SPEC_CMD;
 					break;
 				default:	
 					break;
@@ -318,12 +348,19 @@ ISR(USARTC0_RXC_vect)	// USART1 is the data/cmd channel for the rpm LED
 			break;
 		case RPM_CLR:
 			clear_display(RPM_DISPLAY);
+			state = IDLE;
 			break;
 		case MPH_CLR:
 			clear_display(MPH_DISPLAY);
+			state = IDLE;
 			break;
 		case SPEC_CMD:
-			special_cmd(1,(int)ch);
+			state = SPEC_CMD2;
+			break;
+		case SPEC_CMD2:
+			special_cmd((int)ch,1);
+			PORTE_OUTTGL = 2;
+			state = IDLE;
 			break;
 		case DONE_RPM:
 			process_digits(rpm, RPM_DISPLAY);
@@ -337,7 +374,6 @@ ISR(USARTC0_RXC_vect)	// USART1 is the data/cmd channel for the rpm LED
 			break;
 	}
 }
-
 /*********************************************************************************************/
 ISR(USARTD0_RXC_vect)	// USART2
 {
@@ -346,24 +382,20 @@ ISR(USARTD0_RXC_vect)	// USART2
 	ch = USART_RXBuffer_GetByte(&USART_data2);
 //	USART_TXBuffer_PutByte(&USART_data2, ch);
 }
-
 /*********************************************************************************************/
 ISR(USARTC0_DRE_vect)
 {
 	USART_DataRegEmpty(&USART_data1);
 }
-
 /*********************************************************************************************/
 ISR(USARTD0_DRE_vect)
 {
 	USART_DataRegEmpty(&USART_data2);
 }
-
 /*********************************************************************************************/
 ISR(TCC0_OVF_vect)
 {
 }
-
 /*********************************************************************************************/
 void sendChar(UCHAR ch, int which)
 {
@@ -382,7 +414,6 @@ void sendChar(UCHAR ch, int which)
 */
 	_delay_ms(3);
 }
-
 /*********************************************************************************************/
 void process_digits(uint16_t val, int uart)
 {
@@ -450,7 +481,6 @@ void process_digits(uint16_t val, int uart)
 		sendChar(LED_CURSOR,uart);
 		sendChar(3,uart);
 		digit_len = 0;
-		PORTE_OUTTGL = 2;
 	}
 	else
 	{
@@ -499,7 +529,6 @@ void clear_display(int uart)
 	sendChar(LED_CURSOR,uart);
 	sendChar(0,uart);
 }
-
 /*********************************************************************************************/
 void special_cmd(int type, int ttimes)
 {

@@ -27,12 +27,16 @@ volatile int onoff = 0;
 #define true 1
 #define LED PB5
 
-#define RPM_CMD 0xFF
+#define RPM_CMD 0xFF		// display int value
 #define MPH_CMD 0xFE
-#define RPM_BR_CMD 0xFD
+#define RPM_BR_CMD 0xFD		// adjust brightness
 #define MPH_BR_CMD 0xFC
+#define RPM_CL_CMD 0xFB		// clear display
+#define MPH_CL_CMD 0xFA
+#define SPECIAL_CMD 0xF9	// display pattern on both displays
 
 // timer int's every 50ms
+/*********************************************************************************************/
 ISR(TIMER1_OVF_vect)
 {
 	TCNT1 = 0x37FF;
@@ -54,6 +58,7 @@ ISR(TIMER1_OVF_vect)
 	}
 }
 
+/*********************************************************************************************/
 int main(void)
 {
 	int i,j,k;
@@ -61,6 +66,7 @@ int main(void)
 	UCHAR out_array[10];
 	UCHAR bright = 100;
 	UINT temp;
+	UCHAR param = 0;
 
 //	TCCR1B = (1<<CS10) | (1<<CS12);;  // Timer mode with 1024 prescler
 //	TCCR1B = (1<<CS11) | (1<<CS10);
@@ -90,6 +96,7 @@ int main(void)
 		_delay_us(100);
 	}
 
+	mph = 100;
 	while(true)
 	{
 #if 0
@@ -113,11 +120,38 @@ int main(void)
 #endif
 //		if((k % 3) == 0)
 		_delay_ms(20);
+		param = 1;
 		if(1)
 		{
 			if(--mph < 0)
 			{
-				mph = 1150;
+				mph = 1115;
+				transmitByte(SPECIAL_CMD);
+				_delay_ms(1);
+				transmitByte(param);
+				_delay_ms(1);
+				transmitByte(param);
+				_delay_ms(1300);
+				transmitByte(SPECIAL_CMD);
+				_delay_ms(1);
+				param = 2;
+				transmitByte(param);
+				_delay_ms(1);
+				transmitByte(param);
+				_delay_ms(1300);
+				transmitByte(SPECIAL_CMD);
+				_delay_ms(1);
+				param = 0;
+				transmitByte(param);
+				_delay_ms(1);
+				transmitByte(param);
+				_delay_ms(1500);
+				transmitByte(MPH_CL_CMD);
+				_delay_ms(1);
+				transmitByte(param);
+				_delay_ms(1);
+				transmitByte(param);
+				_delay_ms(1000);
 			}
 			out_array[0] = MPH_CMD;
 			temp = (UINT)mph;
@@ -151,7 +185,7 @@ int main(void)
 			j = 0;
 		}
 		if(mph < 13)
-			_delay_ms(1000);
+			_delay_ms(100);
 		_delay_ms(20);
 
 		if(mph == 10)
