@@ -105,6 +105,8 @@ USART_data_t USART_data1;
 USART_data_t USART_data2;
 
 static uint16_t rpm, mph;
+static int rpm_update, mph_update;
+static int rpm_update_count, mph_update_count;
 static int state;
 static 	uint16_t temp;
 static int ttimes;
@@ -171,8 +173,8 @@ int main(void)
 //	TC_SetPeriod( &TCC0, 61 );		// 1/32 second
 //	TC_SetPeriod( &TCC0, 122 );		// 1/16 second
 //	TC_SetPeriod( &TCC0, 244 );		// 1/8 second
-	TC_SetPeriod( &TCC0, 488 );		// 1/4 second
-//	TC_SetPeriod( &TCC0, 976 );		// 1/2 second
+//	TC_SetPeriod( &TCC0, 488 );		// 1/4 second
+	TC_SetPeriod( &TCC0, 976 );		// 1/2 second
 //	TC_SetPeriod( &TCC0, 1953 );	// one second
 //	TC_SetPeriod( &TCC0, 3906 );	// two seconds
 
@@ -231,6 +233,8 @@ int main(void)
 	_delay_ms(1);
 	special_cmd(0,1);
 	_delay_ms(1);
+/*
+this works when calling explicitly, but not from the serial port
 	decimal_cmd(1);
 	_delay_ms(300);
 	decimal_cmd(2);
@@ -244,23 +248,25 @@ int main(void)
 	decimal_cmd(2);
 	_delay_ms(300);
 	decimal_cmd(1);
+*/
 	sendChar(LED_CLRDISP,MPH_DISPLAY);
 	sendChar(LED_CLRDISP,RPM_DISPLAY);
 	_delay_ms(1);
 
 	state = IDLE;
-
+	mph_update = rpm_update = 0;
+	mph_update_count = rpm_update_count = 5;
 	USART_Rx_Enable(USART_data1.usart);
 	mph = 2000;
 	rpm = 0;
 	USART_Rx_Enable(USART_data2.usart);
-
+/*
 	for(j = 0;j < 10;j++)
 	{
 		PORTE_OUTTGL = 2;
 		_delay_ms(10);
 	}
-
+*/
 	// to test, comment out the USART_Rx_Enable's above and
 	// uncomment the code below
 
@@ -307,12 +313,14 @@ ISR(USARTC0_RXC_vect)	// USART1 is the data/cmd channel for the rpm LED
 			switch(ch)
 			{
 				case RPM_CMD:
-					state = RPM_LOW_BYTE;
+					rpm_update = 0;
 					rpm = 0;
+					state = RPM_LOW_BYTE;
 					break;
 				case MPH_CMD:
-					state = MPH_LOW_BYTE;
+					mph_update = 0;
 					mph = 0;
+					state = MPH_LOW_BYTE;
 					break;
 				case RPM_BR_CMD:
 					state = RPM_BRIGHT;
@@ -396,10 +404,12 @@ ISR(USARTC0_RXC_vect)	// USART1 is the data/cmd channel for the rpm LED
 			break;	
 		case DONE_RPM:
 			process_digits(rpm, RPM_DISPLAY);
+			rpm_update = 1;
 			state = IDLE;
 			break;
 		case DONE_MPH:
 			process_digits(mph, MPH_DISPLAY);
+			mph_update = 1;
 			state = IDLE;
 			break;
 		default:
@@ -427,6 +437,19 @@ ISR(USARTD0_DRE_vect)
 /*********************************************************************************************/
 ISR(TCC0_OVF_vect)
 {
+	if(mph_update == 0)
+	{
+		mph_update_count--;
+		if(mph_update_count == 0)
+		{
+			PORTE_OUTCLR = 2;
+		}
+	}	
+	else
+	{
+		PORTE_OUTSET = 2;
+		mph_update_count = 5;
+	}		
 }
 /*********************************************************************************************/
 void sendChar(UCHAR ch, int which)
@@ -731,7 +754,6 @@ void decimal_cmd(int dec_place)
 			param = 8;
 			break;
 		default:
-			PORTE_OUTTGL = 2;
 			param = 0;
 			break;
 	}

@@ -127,7 +127,7 @@ int main(void)
 		{
 			if(--mph < 0)
 			{
-				mph = 111;
+				mph = 123;
 				transmitByte(SPECIAL_CMD);
 				_delay_ms(1);
 				transmitByte(param);
@@ -191,6 +191,9 @@ int main(void)
 			_delay_ms(100);
 		_delay_ms(20);
 
+		if(mph == 100)
+			_delay_ms(5000);
+
 		if(mph == 2)
 		{
 			out_array[0] = MPH_BR_CMD;
@@ -204,18 +207,18 @@ int main(void)
 			}
 			_delay_ms(500);
 
-			out_array[0] = MPH_DEC_CMD;
-			for(l = 0;l < 4;l++)
+/*	decimal cmd not working 
+
+			for(l = 0;l < 3;l++)
 			{
-				out_array[1] = l + 1;
-				out_array[2] = 10;
-				for(i = 0;i < 2;i++)
-				{
-					transmitByte(out_array[i]);
-					_delay_ms(10);
-				}
-				_delay_ms(500);
+				transmitByte(MPH_DEC_CMD);
+				_delay_ms(10);
+				transmitByte((UCHAR)(l+1));
+				_delay_ms(10);
+				transmitByte(0);
+				_delay_ms(600);
 			}
+*/
 		}
 		k++;
 	}
