@@ -232,20 +232,20 @@ int main(void)
 	special_cmd(0,1);
 	_delay_ms(1);
 	decimal_cmd(1);
-	_delay_ms(200);
+	_delay_ms(300);
 	decimal_cmd(2);
-	_delay_ms(200);
+	_delay_ms(300);
 	decimal_cmd(3);
-	_delay_ms(200);
+	_delay_ms(300);
 	decimal_cmd(4);
-	_delay_ms(200);
+	_delay_ms(300);
 	decimal_cmd(3);
-	_delay_ms(200);
+	_delay_ms(300);
 	decimal_cmd(2);
-	_delay_ms(200);
+	_delay_ms(300);
 	decimal_cmd(1);
-	_delay_ms(200);
-	decimal_cmd(0);
+	sendChar(LED_CLRDISP,MPH_DISPLAY);
+	sendChar(LED_CLRDISP,RPM_DISPLAY);
 	_delay_ms(1);
 
 	state = IDLE;
@@ -720,24 +720,22 @@ void decimal_cmd(int dec_place)
 			break;
 		case 1:
 			param = 1;
-			PORTE_OUTTGL = 2;
 			break;
 		case 2:
 			param = 2;
-			PORTE_OUTTGL = 2;
 			break;
 		case 3:
 			param = 4;
-			PORTE_OUTTGL = 2;
 			break;
 		case 4:
 			param = 8;
-			PORTE_OUTTGL = 2;
 			break;
 		default:
+			PORTE_OUTTGL = 2;
 			param = 0;
 			break;
 	}
+	_delay_ms(1);
 	if(USART_IsTXDataRegisterEmpty(&USART1))
 		USART_PutChar(&USART1,param);
 	_delay_ms(1);

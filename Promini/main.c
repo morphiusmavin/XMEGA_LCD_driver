@@ -75,13 +75,9 @@ int main(void)
 //	TCCR1B = (1<<CS12);
 	TCCR1B = (1<<CS11);
 	TIMSK1 = (1 << TOIE1) ;   // Enable timer1 overflow interrupt(TOIE1)
-	_delay_ms(1);
-	PORTB |= 0x0F;
-	_delay_ms(1);
-	sei(); // Enable global interrupts by setting global interrupt enable bit in SREG
-	_delay_ms(1);
+	_delay_us(1);
 	initUSART();
-	_delay_ms(1);
+	_delay_us(1);
 
 	i = 0;
 	j = 0;
@@ -198,48 +194,26 @@ int main(void)
 		if(mph == 2)
 		{
 			out_array[0] = MPH_BR_CMD;
-			out_array[1] = 0;
-			out_array[2] = 0;
-
-			for(i = 0;i < 2;i++)
-			{
-				transmitByte(out_array[i]);
-				_delay_us(100);
-			}
-/*
-			for(i = 0;i < 4;i++)
-			{
-				PORTB |= (1 << LED);
-				_delay_ms(500);
-				PORTB &= ~(1 << LED);
-				_delay_ms(500);
-			}
-*/
-			_delay_ms(500);
-			out_array[0] = MPH_BR_CMD;
 			out_array[1] = 100;
 			out_array[2] = 0;
 
 			for(i = 0;i < 2;i++)
 			{
 				transmitByte(out_array[i]);
-				_delay_us(100);
+				_delay_us(10);
 			}
 			_delay_ms(500);
+
 			out_array[0] = MPH_DEC_CMD;
 			for(l = 0;l < 4;l++)
 			{
-				out_array[1] = l;
-				for(i = 0;i < 3;i++)
+				out_array[1] = l + 1;
+				out_array[2] = 10;
+				for(i = 0;i < 2;i++)
 				{
 					transmitByte(out_array[i]);
-					_delay_ms(100);
+					_delay_ms(10);
 				}
-/*
-				PORTB |= (1 << LED);
-				_delay_ms(500);
-				PORTB &= ~(1 << LED);
-*/
 				_delay_ms(500);
 			}
 		}
