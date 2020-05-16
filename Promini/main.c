@@ -98,129 +98,26 @@ int main(void)
 		_delay_us(100);
 	}
 
-	mph = 100;
+	mph = 0;
 	while(true)
 	{
-#if 0
-		if(1)
-//		if((k % 2) == 0)
+		_delay_ms(80);
+		out_array[0] = MPH_CMD;
+		temp = (UINT)mph;
+		out_array[1] = (UCHAR)temp;
+		temp >>= 8;
+		out_array[2] = (UCHAR)temp;
+		out_array[3] = 0;
+		for(i = 0;i < 5;i++)
 		{
-			out_array[0] = RPM_CMD;
-			temp = (UINT)rpm;
-			out_array[1] = (UCHAR)temp;
-			temp >>= 8;
-			out_array[2] = (UCHAR)temp;
-			out_array[3] = 0;
-			for(i = 0;i < 5;i++)
-			{
-				transmitByte(out_array[i]);
-				_delay_us(1000);
-			}
-			if(++rpm > 5000)
-				rpm = 0;
+			transmitByte(out_array[i]);
+			_delay_us(1000);
 		}
-#endif
-//		if((k % 3) == 0)
-		_delay_ms(20);
-		param = 1;
-		if(1)
-		{
-			if(--mph < 0)
-			{
-				mph = 123;
-				transmitByte(SPECIAL_CMD);
-				_delay_ms(1);
-				transmitByte(param);
-				_delay_ms(1);
-				transmitByte(param);
-				_delay_ms(1300);
-				transmitByte(SPECIAL_CMD);
-				_delay_ms(1);
-				param = 2;
-				transmitByte(param);
-				_delay_ms(1);
-				transmitByte(param);
-				_delay_ms(1300);
-				transmitByte(SPECIAL_CMD);
-				_delay_ms(1);
-				param = 0;
-				transmitByte(param);
-				_delay_ms(1);
-				transmitByte(param);
-				_delay_ms(1500);
-				transmitByte(MPH_CL_CMD);
-				_delay_ms(1);
-				transmitByte(param);
-				_delay_ms(1);
-				transmitByte(param);
-				_delay_ms(1000);
-				
-			}
-			out_array[0] = MPH_CMD;
-			temp = (UINT)mph;
-			out_array[1] = (UCHAR)temp;
-			temp >>= 8;
-			out_array[2] = (UCHAR)temp;
-			out_array[3] = 0;
-			for(i = 0;i < 5;i++)
-			{
-				transmitByte(out_array[i]);
-				_delay_us(1000);
-			}
-		}
-
-		if(++j > 1)
-		{
-			out_array[0] = MPH_BR_CMD;
-			out_array[1] = bright;
-			out_array[2] = 0;
-
-			for(i = 0;i < 2;i++)
-			{
-				transmitByte(out_array[i]);
-				_delay_us(100);
-			}
-			if(--bright < 1)
-			{
-				bright = 100;
-				_delay_ms(100);
-			}
-			j = 0;
-		}
-		if(mph < 13)
-			_delay_ms(100);
-		_delay_ms(20);
-
 		if(mph == 100)
-			_delay_ms(5000);
+			_delay_ms(2000);
 
-		if(mph == 2)
-		{
-			out_array[0] = MPH_BR_CMD;
-			out_array[1] = 100;
-			out_array[2] = 0;
-
-			for(i = 0;i < 2;i++)
-			{
-				transmitByte(out_array[i]);
-				_delay_us(10);
-			}
-			_delay_ms(500);
-
-/*	decimal cmd not working 
-
-			for(l = 0;l < 3;l++)
-			{
-				transmitByte(MPH_DEC_CMD);
-				_delay_ms(10);
-				transmitByte((UCHAR)(l+1));
-				_delay_ms(10);
-				transmitByte(0);
-				_delay_ms(600);
-			}
-*/
-		}
-		k++;
+		if(++mph > 200)
+			mph = 0;
 	}
 	return 0;
 }

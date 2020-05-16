@@ -172,9 +172,9 @@ int main(void)
 	/* Set period/TOP value. */
 //	TC_SetPeriod( &TCC0, 61 );		// 1/32 second
 //	TC_SetPeriod( &TCC0, 122 );		// 1/16 second
-//	TC_SetPeriod( &TCC0, 244 );		// 1/8 second
+	TC_SetPeriod( &TCC0, 244 );		// 1/8 second
 //	TC_SetPeriod( &TCC0, 488 );		// 1/4 second
-	TC_SetPeriod( &TCC0, 976 );		// 1/2 second
+//	TC_SetPeriod( &TCC0, 976 );		// 1/2 second
 //	TC_SetPeriod( &TCC0, 1953 );	// one second
 //	TC_SetPeriod( &TCC0, 3906 );	// two seconds
 
@@ -188,7 +188,7 @@ int main(void)
 	PMIC.CTRL |= PMIC_HILVLEN_bm;
 
 /* Enable global interrupts. */
-	sei();
+//	sei();
 
 
 /* sometimes the LCD baudrate gets reset to factory 9600
@@ -226,11 +226,13 @@ int main(void)
 	sendChar(LED_BRIGHT, RPM_DISPLAY);
 	_delay_ms(1);
 	sendChar(bright, RPM_DISPLAY);
+/*
 	_delay_ms(1);
 	special_cmd(1,1);
 	_delay_ms(1);
 	special_cmd(2,1);
 	_delay_ms(1);
+*/
 	special_cmd(0,1);
 	_delay_ms(1);
 /*
@@ -254,7 +256,8 @@ this works when calling explicitly, but not from the serial port
 	_delay_ms(1);
 
 	state = IDLE;
-	mph_update = rpm_update = 0;
+	sei();
+	mph_update = rpm_update = 1;
 	mph_update_count = rpm_update_count = 5;
 	USART_Rx_Enable(USART_data1.usart);
 	mph = 2000;
@@ -296,7 +299,8 @@ this works when calling explicitly, but not from the serial port
 		process_digits(mph,MPH_DISPLAY);
 */
 //		PORTE_OUTTGL = 2;
-		_delay_ms(1000);
+		_delay_ms(500);
+		mph_update = 0;
 	}
 }
 
@@ -313,12 +317,10 @@ ISR(USARTC0_RXC_vect)	// USART1 is the data/cmd channel for the rpm LED
 			switch(ch)
 			{
 				case RPM_CMD:
-					rpm_update = 0;
 					rpm = 0;
 					state = RPM_LOW_BYTE;
 					break;
 				case MPH_CMD:
-					mph_update = 0;
 					mph = 0;
 					state = MPH_LOW_BYTE;
 					break;
@@ -437,19 +439,24 @@ ISR(USARTD0_DRE_vect)
 /*********************************************************************************************/
 ISR(TCC0_OVF_vect)
 {
+	// as  long as mph_update == 1 then we are
+	// processing mph, if not then assume it is 0
+	// and set the display to '0'
 	if(mph_update == 0)
 	{
-		mph_update_count--;
+		if(mph_update_count > 0)
+			mph_update_count--;
 		if(mph_update_count == 0)
 		{
 			PORTE_OUTCLR = 2;
+			process_digits(0, MPH_DISPLAY);
 		}
 	}	
 	else
 	{
 		PORTE_OUTSET = 2;
-		mph_update_count = 5;
-	}		
+		mph_update_count = 3;
+	}
 }
 /*********************************************************************************************/
 void sendChar(UCHAR ch, int which)
