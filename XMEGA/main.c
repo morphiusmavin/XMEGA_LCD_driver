@@ -62,6 +62,7 @@ void process_digits(uint16_t val, int uart);
 void sendChar(UCHAR ch, int which);
 void clear_display(int uart);
 void special_cmd(int type, int ttimes);
+void decimal_cmd(int dec_place);
 // commands to LED modules (see: https://github.com/sparkfun/Serial7SegmentDisplay/wiki/Special-Commands)
 #define LED_CLRDISP		0x76
 #define LED_DECIMAL		0X77
@@ -83,6 +84,7 @@ void special_cmd(int type, int ttimes);
 #define RPM_CL_CMD 0xFB		// clear display
 #define MPH_CL_CMD 0xFA
 #define SPECIAL_CMD 0xF9	// display pattern on both displays
+#define MPH_DEC_CMD 0xF7
 
 /* baudrate params:
 0 	2400
@@ -119,6 +121,8 @@ enum
 	MPH_CLR,
 	SPEC_CMD,
 	SPEC_CMD2,
+	DEC_CMD,
+	DEC_CMD2,
 	DONE_RPM,
 	DONE_MPH
 }STATES;
@@ -227,6 +231,23 @@ int main(void)
 	_delay_ms(1);
 	special_cmd(0,1);
 	_delay_ms(1);
+	decimal_cmd(1);
+	_delay_ms(200);
+	decimal_cmd(2);
+	_delay_ms(200);
+	decimal_cmd(3);
+	_delay_ms(200);
+	decimal_cmd(4);
+	_delay_ms(200);
+	decimal_cmd(3);
+	_delay_ms(200);
+	decimal_cmd(2);
+	_delay_ms(200);
+	decimal_cmd(1);
+	_delay_ms(200);
+	decimal_cmd(0);
+	_delay_ms(1);
+
 	state = IDLE;
 
 	USART_Rx_Enable(USART_data1.usart);
@@ -304,7 +325,10 @@ ISR(USARTC0_RXC_vect)	// USART1 is the data/cmd channel for the rpm LED
 					break;	
 				case RPM_CL_CMD:
 					state = RPM_CLR;
-					break;	
+					break;
+				case MPH_DEC_CMD:
+					state = DEC_CMD;
+					break;
 				case SPECIAL_CMD:
 					state = SPEC_CMD;
 					break;
@@ -359,9 +383,17 @@ ISR(USARTC0_RXC_vect)	// USART1 is the data/cmd channel for the rpm LED
 			break;
 		case SPEC_CMD2:
 			special_cmd((int)ch,1);
-			PORTE_OUTTGL = 2;
+//			PORTE_OUTTGL = 2;
 			state = IDLE;
 			break;
+		case DEC_CMD:
+			state = DEC_CMD2;
+			break;
+		case DEC_CMD2:
+			decimal_cmd((int)ch);
+//			PORTE_OUTTGL = 2;
+			state = IDLE;
+			break;	
 		case DONE_RPM:
 			process_digits(rpm, RPM_DISPLAY);
 			state = IDLE;
@@ -671,4 +703,43 @@ seg:	x	7	6	5	4	3	2	1
 		}
 	}
 }
+/*********************************************************************************************/
+// 0 - off; 1 - dec pnt after digit 1; 2 - after digit 2; 3 - digit 3; 4 - 4
+void decimal_cmd(int dec_place)
+{
+	UCHAR param = 0;
+
+	if(USART_IsTXDataRegisterEmpty(&USART1))
+		USART_PutChar(&USART1,LED_DECIMAL);
+	_delay_ms(1);
+
+	switch(dec_place)
+	{
+		case 0:
+			param = 0;
+			break;
+		case 1:
+			param = 1;
+			PORTE_OUTTGL = 2;
+			break;
+		case 2:
+			param = 2;
+			PORTE_OUTTGL = 2;
+			break;
+		case 3:
+			param = 4;
+			PORTE_OUTTGL = 2;
+			break;
+		case 4:
+			param = 8;
+			PORTE_OUTTGL = 2;
+			break;
+		default:
+			param = 0;
+			break;
+	}
+	if(USART_IsTXDataRegisterEmpty(&USART1))
+		USART_PutChar(&USART1,param);
+	_delay_ms(1);
+}	
 
