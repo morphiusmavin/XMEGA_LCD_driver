@@ -1,0 +1,26 @@
+git add XMEGA/avr_compiler.h
+git add XMEGA/clean.sh
+git add XMEGA/documentation.h
+git add XMEGA/main.c
+git add XMEGA/Makefile
+git add XMEGA/TC_driver.c
+git add XMEGA/TC_driver.h
+git add XMEGA/usart_compile.sh
+git add XMEGA/usart_driver.c
+git add XMEGA/usart_driver.h
+git add Promini/atmega328p.conf
+git add Promini/avrdude.conf
+git add Promini/avrdude-test
+git add Promini/macros.h
+git add Promini/main.c
+git add Promini/main.h
+git add Promini/Makefile
+git add Promini/pinDefines.h
+git add Promini/portpins.h
+git add Promini/ProMiniPinout.txt
+git add Promini/run-avrdude
+git add Promini/sfr_helper.h
+git add Promini/USART.c
+git add Promini/USART.h
+git add README.md
+git status

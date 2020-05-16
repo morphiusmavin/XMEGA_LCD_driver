@@ -1,0 +1,225 @@
+AtMega328p pinout (Pro Mini Board)
+11/24/16
+
+bottom view of chip:
+(connections for buspirate on left)
+(pins for RX/TX on right)
+
+(these signals are used by LCD)
+RD	*	*	*	WR	CE	RST	CD	*	*	GND	+5V
+
+A5		A7
+A4		A6
+------------
+VCC		MISO
+MOSI	CLK
+GND		RST
+
+DATA7--------------------DATA0	*	*	*	*
+
+2	data 0
+3	data 1
+4	data 2
+5	data 3
+6	data 4
+7	data 5
+8	data 6
+9	data 7
+10	LCD_RD	SS	-- these are used by the programmer but if programmer is not plugged in
+11	MOSI		-- they can be used by the application
+12	MISO		--
+13	SCK			--
+A0	LCD_WR
+A1	LCD_CE
+A2	LCD_RST
+A3	LCD_CD
+A4	
+A5
+A6
+A7
+DTR
+TXD
+RXD
+MIS		-		goes to MISO on buspirate*	(same as pin 11)
+MOS		-		goes to MOSI on buspirate*	(same as pin 12)
+SCK		-		goes to CLK  "		"		(same as pin 13)
+VCC		-		goes to VCC	 "		"
+GND		-		goes to GND	 "		"
+RESET	-		goes to CS   "      "
+RAW		-		+5v input
+
+* most documentation shows MISO<-->MOSI and MOSI<-->MISO wtf?
+
+pinout for actual chip
+1	PD3		(PCINT19/OC2B/INT1)
+2	PD4		(PCINT20/XCK/TO)
+3	GND
+4	VCC
+5	GND
+6	VCC
+7	PB6		(PCINT6/XTAL1/TOSC1)
+8	PB7		(PCINT7/XTAL2/TOSC2)
+9	PD5		(PCINT21/OC0B/TI)
+10	PD6		(PCINT22/OC0A/AIN0)
+11	PD7		(PCINT23/AIN1)
+12	PB0		(PCINT0/CLK0/ICP1)
+13	PB1		(PCINT1/OC1A)
+14	PB2		(PCINT2/SS/OC1B)
+15	PB3		(PCINT3/OC2A/MOSI)
+16	PB4		(PCINT4/MISO)
+17	PB5		(SCK/PCINT5)
+18	AVCC
+19	ADC6
+20	AREF
+21	GND
+22	ADC7
+23	PC0		(ADC0/PCINT8)
+24	PC1		(ADC1/PCINT9)
+25	PC2		(ADC2/PCINT10)
+26	PC3		(ADC3/PCINT11)
+27	PC4		(ADC4/SDA/PCINT12)
+28	PC5		(ADC5/SCL/PCINT13)
+29	PC6		(RESET/PCINT14)
+30	PD0		(RXD/PCINT16)
+31	PD1		(TXD/PCINT17)
+32	PD2		(INT0/PCINT18)
+
+port B
+12	PB0		(PCINT0/CLK0/ICP1)
+13	PB1		(PCINT1/OC1A)
+14	PB2		(PCINT2/SS/OC1B)
+15	PB3		(PCINT3/OC2A/MOSI)
+16	PB4		(PCINT4/MISO)
+17	PB5		(SCK/PCINT5)
+7	PB6		(PCINT6/XTAL1/TOSC1)
+8	PB7		(PCINT7/XTAL2/TOSC2)
+
+port C
+23	PC0		(ADC0/PCINT8)
+24	PC1		(ADC1/PCINT9)
+25	PC2		(ADC2/PCINT10)
+26	PC3		(ADC3/PCINT11)
+27	PC4		(ADC4/SDA/PCINT12)
+28	PC5		(ADC5/SCL/PCINT13)
+29	PC6		(RESET/PCINT14)
+
+port D
+30	PD0		(RXD/PCINT16)
+31	PD1		(TXD/PCINT17)
+32	PD2		(INT0/PCINT18)
+1	PD3		(PCINT19/OC2B/INT1)
+2	PD4		(PCINT20/XCK/TO)
+9	PD5		(PCINT21/OC0B/TI)
+10	PD6		(PCINT22/OC0A/AIN0)
+11	PD7		(PCINT23/AIN1)
+
+BusPirate pinout
+(ribbon cable colors - starting from right when looking at top of board with ICD connection towards you)
+light brown		GND		(black mini clip)
+red				3v3
+orange			+5v**
+yellow			ADC0
+green			VPU
+blue			AUX
+purple			CLK		(other green clip)
+grey			MOSI	(yellow clip)
+white			CS		(white clip)
+black			MISO	(black regular clip)
+
+AVR		 BP
+MOSI <-> MOSI
+MISO <-> MISO
+
+** don't hook this up from buspirate, but put VCC from AVR to separate 5v power supply (RAW)
+
+other chip (Mini Pro) has connections on side for FTDI:
+
+FTDI USB-to-TTL: TX (yellow) -> Arduino Mini Pro RX
+FTDI USB-to-TTL: RX (green) -> Arduino Mini Pro TX
+FTDI USB-to-TTL: GND (brown) -> Arduino Mini Pro GND
+FTDI USB-to-TTL: +5Vcc (red) -> Arduino Mini Pro VCC
+FTDI USB-to-TTL: DTR (orange) -> Arduino Mini Pro Reset
+FTDI USB-to-TTL: CTS (non connected)
+
+(new Pro-Mini)
+(looking at top with reset button on bottom)
+labels:
+TX0		RAW
+RXI		GND
+RST		RST
+GND		VCC
+2		A3
+3		A2
+4		A1
+5		A0
+6		13 SCLK
+7		12 MISO
+8		11 MOSI
+9		10 SS
+
+PORTS:
+PD1		RAW
+PD0		GND
+PC6		PC6
+GND		VCC
+PD2		PC3
+PD3		PC2
+PD4		PC1
+PD5		PC0
+PD6		PB5
+PD7		PB4
+PB0		PB3
+PB1		PCB2
+
+note: be sure and change the clock speed in the Makefile (slow for older one)
+pin labels on bottom left with reset button on left
+13 - SCK
+12 - MISO
+11 - MOSI
+10 - SS
+reset - CS (when programming otherwise when using as SPI this goes to SS?)
+
+ICD cable from programmer looking at hole side with cable up:
+
+1	2	3	4	5
+6	7	8	9	10
+
+1)  gnd
+2)  +5V
+3)  VPU
+4)  CLK
+5)  CS
+6)  3.3V
+7)  ADC
+8)  AUX
+9)  MOSI
+10) MISO
+
+bottom view w/ reset button on right
+
+TX		RX		RESET		gnd		PD2		PD3		PD4		PD5		PD6		PD7		PB0		PB1
+RAW		gnd		RESET		VCC		PC3		PC2		PC1		PC0		PB5		PB4		PB3		PB2
+
+MOSI - PB3
+MISO - PB4
+SCLK - PB5
+
+top view w/ reset button on left:
+
+PB1		PB0		PD7		PD6		PD5		PD4		PD3		PD2		gnd		RESET		RX		TX
+
+													PC4		PC5
+PB2		PB3		PB4		PB5		PC0		PC1		PC2		PC3		VCC		RESET		gnd		RAW
+
+16 dip above ProMini w/ reset button on left:
+
+PB1		PB0		PD7		PD6		PD5		PD4		PD3		PD2
+PB2		PB3		PB4		PB5		PC0		PC1		PC2		PC3
+
+10-pin dip on right of ProMini is the programming port.
+
+round rocker switches:
+gold pin (opposite the light) is common gnd
+middle pin is common hot (5vdc in this app)
+other pin (same side as light) is the input which needs a pull-down 4k7 resistor
+
