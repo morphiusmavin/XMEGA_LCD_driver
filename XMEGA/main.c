@@ -212,27 +212,33 @@ int main(void)
 	_delay_ms(100);
 
 //	USART_Rx_Enable(USART_data1.usart);
-	mph = rpm = 0;
+	mph = 2000;
+	rpm = 0;
 	bright = 100;
 //	USART_Rx_Enable(USART_data2.usart);
 
 	while(1)
 	{
-		_delay_ms(3);
-
-		if(++rpm > 600)
-			rpm = 5;
-		if(++mph > 25)
+		if(mph > 20)
 		{
-			special_cmd(1,1);
-			special_cmd(2,1);
-			special_cmd(0,1);
-			clear_display(MPH_DISPLAY);
-			_delay_ms(500);
-			mph = 0;
+			_delay_ms(3);
+			mph -= 19;
+		}else
+		{
+			_delay_ms(100);
+			mph--;
+			if(mph < 1)
+			{
+				special_cmd(1,1);
+				special_cmd(2,1);
+				special_cmd(0,1);
+				clear_display(MPH_DISPLAY);
+				_delay_ms(500);
+				mph = 2000;
+			}
 		}
-		process_digits(rpm,RPM_DISPLAY);
-		_delay_ms(10);
+//		process_digits(rpm,RPM_DISPLAY);
+//		_delay_ms(10);
 		process_digits(mph,MPH_DISPLAY);
 	}
 }
